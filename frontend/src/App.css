@@ -1,0 +1,29 @@
+.sidebar {
+  width: 14rem;
+  /* Width of the sidebar */
+  background-color: #1E3A8A;
+  /* Tailwind's blue-900 */
+  color: white;
+  transition: transform 0.3s ease;
+  transform: translateX(0);
+  /* Sidebar is visible */
+}
+
+.sidebar.closed {
+  transform: translateX(-100%);
+  /* Sidebar is hidden */
+}
+
+.header {
+  z-index: 10;
+  /* Ensure header is on top */
+}
+
+.sidebar {
+  z-index: 5;
+  /* Sidebar below header */
+}
+
+.toggleBar {
+  z-index: 15;
+}
