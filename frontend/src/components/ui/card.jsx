@@ -1,6 +1,6 @@
 // src/components/ui/Card.jsx
 const Card = ({ children }) => {
-    return <div className="bg-white shadow-md p-4 rounded-lg">{children}</div>;
+    return <div className="bg-red shadow-md p-4 rounded-lg">{children}</div>;
 };
 
 const CardContent = ({ children }) => {

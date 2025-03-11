@@ -1,7 +1,7 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 const Chart = ({ data }) => (
-    <div className="bg-white p-4 rounded-lg shadow mt-6">
+    <div className="bg-grey p-4 rounded-lg shadow mt-6">
         <h2 className="text-xl font-bold mb-2">Questions Distribution</h2>
         <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data}>
