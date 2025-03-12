@@ -1,65 +1,77 @@
-import { useState } from "react";
-import QuestionForm from "./QuestionForm";
-import QuestionList from "./QuestionList";
-import * as XLSX from "xlsx";
+import { useEffect, useState } from 'react';
+import QuestionForm from './QuestionForm';
+import QuestionList from './QuestionList';
+import * as XLSX from 'xlsx';
+import { useAuthFetch } from '../hooks/useAuthFetch';
 
 const QuestionManagement = () => {
     const [questions, setQuestions] = useState([]);
+    const authFetch = useAuthFetch();
+
+    useEffect(() => {
+        fetchQuestions();
+    }, []);
+
+    const fetchQuestions = () => {
+        authFetch('http://localhost:3000/admins/questions')
+            .then((res) => res.json())
+            .then((data) => setQuestions(data.questions))
+            .catch((err) => console.log(err));
+    };
 
     const addQuestion = (question) => {
-        setQuestions([...questions, question]);
+        authFetch('http://localhost:3000/admins/questions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(question),
+        })
+            .then((res) => res.json())
+            .then((data) => console.log(data))
+            .catch((e) => console.log(e));
     };
 
-    const deleteQuestion = (index) => {
-        setQuestions(questions.filter((_, i) => i !== index));
-    };
-
-    const editQuestion = (index) => {
-        const updatedQuestion = prompt("Edit Question:", questions[index].question);
-        if (updatedQuestion) {
-            const updatedQuestions = [...questions];
-            updatedQuestions[index].question = updatedQuestion;
-            setQuestions(updatedQuestions);
-        }
+    const deleteQuestion = (id) => {
+        authFetch(`http://localhost:3000/admins/questions/${id}`, {
+            method: 'DELETE',
+        })
+            .then((res) => res.json())
+            .then((data) => console.log(data))
+            .catch((err) => console.log(err));
+        setQuestions(questions?.filter((item) => item._id !== id));
     };
 
     const handleFileUpload = (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
+        const formData = new FormData();
+        formData.append('file', event.target.files[0]);
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: "array" });
-            const sheetName = workbook.SheetNames[0];
-            const sheet = workbook.Sheets[sheetName];
-            const parsedData = XLSX.utils.sheet_to_json(sheet);
+        if (!event.target.files[0]) {
+            console.log('no file found');
+            return;
+        }
 
-            const formattedQuestions = parsedData.map((row) => ({
-                question: row.Question || "",
-                type: row.Type || "2-mark",
-                co: row.CO || "",
-                po: row.PO || "",
-                bl: row.BL || ""
-            }));
-
-            setQuestions([...questions, ...formattedQuestions]);
-        };
-        reader.readAsArrayBuffer(file);
+        authFetch('http://localhost:3000/admins/questions/csv/upload', {
+            method: 'POST',
+            body: formData,
+        })
+            .then((res) => res.json())
+            .then((data) => setQuestions([...questions, ...data.data]))
+            .catch((err) => console.log(err));
     };
 
     return (
-        <div className="p-6 text-white">
-            <div className="mb-4">
+        <div className='p-6 text-white'>
+            <div className='mb-4'>
                 <input
-                    type="file"
-                    accept=".xlsx, .xls"
+                    type='file'
+                    accept='.csv'
                     onChange={handleFileUpload}
-                    className="bg-gray-800 p-2 rounded-lg text-white cursor-pointer"
+                    className='bg-gray-800 p-2 rounded-lg text-white cursor-pointer'
                 />
             </div>
             <QuestionForm onSubmit={addQuestion} />
-            <QuestionList questions={questions} onDelete={deleteQuestion} onEdit={editQuestion} />
+            <QuestionList questions={questions} onDelete={deleteQuestion} />
         </div>
     );
 };
